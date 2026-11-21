@@ -126,6 +126,13 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 }
 .c.peek .fc{border-color:var(--gold)}
 .c.soul-pair .fc,.c.soul-pair .bc{border-color:var(--spirit);box-shadow:0 0 0 3px var(--spirit),0 0 18px rgba(109,76,156,.5)}
+#grid.swapping-cards{overflow:visible}
+.c.swap-moving{z-index:20;pointer-events:none}
+.c.swap-moving.swap-top{z-index:22}
+.c.swap-moving .bc,.c.swap-moving .fc{
+  border-color:var(--gold);
+  box-shadow:0 14px 28px rgba(0,0,0,.55),0 0 0 3px var(--gold),0 0 22px rgba(230,173,67,.72);
+}
 .c.swap-glow .bc,.c.swap-glow .fc{animation:swapPulse .85s ease}
 @keyframes swapPulse{0%,100%{box-shadow:var(--shadow)}45%{box-shadow:0 0 0 4px var(--gold),0 0 18px var(--gold);transform:scale(1.05)}}
 
@@ -1554,7 +1561,8 @@ const FX = {
   lose() { [67,64,60,55].forEach((m,i) => tone(N(m),.45,"triangle",.18,i*.26,N(m)*.97)); },
   levelup() { [64,67,71,76,79].forEach((m,i) => tone(N(m),.32,"triangle",.16,i*.09)); tone(N(83),.75,"sine",.14,.45); },
   pet() { tone(N(76),.12,"triangle",.16); tone(N(83),.24,"sine",.15,.07); },
-  rune() { tone(N(74),.18,"triangle",.18); tone(N(81),.28,"sine",.16,.06); }
+  rune() { tone(N(74),.18,"triangle",.18); tone(N(81),.28,"sine",.16,.06); },
+  swap() { noise(.18,.12,0,1200,480); tone(N(71),.16,"sine",.12,0,N(76)); tone(N(76),.22,"triangle",.1,.09); }
 };
 function play(n) { if (sfxOn && ac && FX[n]) FX[n](); }
 function comboSfx(n) {
@@ -2565,7 +2573,16 @@ function pick(i) {
       if (S.php <= 0) return lose();
 
       if (S.enemy.swapEvery && S.misses % S.enemy.swapEvery === 0) {
-        swapTwoUnmatched();
+        const boardRef = S.cards;
+        setTimeout(() => {
+          if (!S || S.cards !== boardRef) return;
+          swapTwoUnmatched(() => {
+            if (!S || S.cards !== boardRef) return;
+            S.lock = false;
+            renderAll();
+          });
+        }, fastMode ? 180 : 300);
+        return;
       }
       S.lock = false;
       renderAll();
@@ -2597,23 +2614,101 @@ function triggerTchiEvent(kind, done) {
   }
 }
 
-function swapTwoUnmatched() {
+function swapTwoUnmatched(done) {
   const candidates = S.cards.map((c, idx) => (!c.m_ && !c.f ? idx : -1)).filter(idx => idx >= 0);
-  if (candidates.length < 2) return;
-  sh(candidates);
-  const [i1, i2] = [candidates[0], candidates[1]];
-  [S.cards[i1], S.cards[i2]] = [S.cards[i2], S.cards[i1]];
-  const nodes = $("grid").children;
-  if (nodes[i1] && nodes[i2]) {
-    nodes[i1].dataset.flipped = "0";
-    nodes[i2].dataset.flipped = "0";
-    nodes[i1].innerHTML = cardInnerHTML(S.cards[i1]);
-    nodes[i2].innerHTML = cardInnerHTML(S.cards[i2]);
-    nodes[i1].classList.remove("swap-glow"); nodes[i2].classList.remove("swap-glow");
-    void nodes[i1].offsetWidth;
-    nodes[i1].classList.add("swap-glow"); nodes[i2].classList.add("swap-glow");
+  if (candidates.length < 2) {
+    if (done) done();
+    return;
   }
+  sh(candidates);
+  const i1 = candidates[0], i2 = candidates[1];
+  const g = $("grid");
+  const nodes = g.children;
+  const el1 = nodes[i1], el2 = nodes[i2];
+  if (!el1 || !el2) {
+    [S.cards[i1], S.cards[i2]] = [S.cards[i2], S.cards[i1]];
+    if (done) done();
+    return;
+  }
+
+  const r1 = el1.getBoundingClientRect();
+  const r2 = el2.getBoundingClientRect();
+
+  [S.cards[i1], S.cards[i2]] = [S.cards[i2], S.cards[i1]];
+  const ph = document.createComment("swap");
+  g.replaceChild(ph, el1);
+  g.replaceChild(el1, el2);
+  g.replaceChild(el2, ph);
+  el1.onclick = () => pick(i2);
+  el2.onclick = () => pick(i1);
+
   toast(`${S.enemy.name} embaralhou 2 cartas de lugar!`);
+  play("swap");
+
+  const nr1 = el1.getBoundingClientRect();
+  const nr2 = el2.getBoundingClientRect();
+  const dx1 = r1.left - nr1.left, dy1 = r1.top - nr1.top;
+  const dx2 = r2.left - nr2.left, dy2 = r2.top - nr2.top;
+
+  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion || !el1.animate || !el2.animate || (!dx1 && !dy1 && !dx2 && !dy2)) {
+    el1.classList.remove("swap-glow"); el2.classList.remove("swap-glow");
+    void el1.offsetWidth;
+    el1.classList.add("swap-glow"); el2.classList.add("swap-glow");
+    if (done) done();
+    return;
+  }
+
+  const vx = nr1.left - r1.left;
+  const vy = nr1.top - r1.top;
+  const dist = Math.hypot(vx, vy) || 1;
+  const arc = Math.min(44, Math.max(20, dist * 0.24));
+  const px = -vy / dist;
+  const py = vx / dist;
+
+  const buildArcFrames = (dx, dy, sign, tiltSign) => {
+    const steps = 16;
+    const frames = [];
+    for (let s = 0; s <= steps; s++) {
+      const t = s / steps;
+      const ease = 0.5 - 0.5 * Math.cos(Math.PI * t);
+      const bump = Math.sin(Math.PI * t);
+      const x = dx * (1 - ease) + px * arc * sign * bump;
+      const y = dy * (1 - ease) + py * arc * sign * bump;
+      const sc = 1 + 0.11 * bump;
+      const rot = 4.5 * tiltSign * bump;
+      frames.push({
+        offset: t,
+        transform: `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${sc.toFixed(3)}) rotate(${rot.toFixed(2)}deg)`
+      });
+    }
+    return frames;
+  };
+
+  const dur = fastMode ? 430 : 650;
+  g.classList.add("swapping-cards");
+  el1.classList.remove("swap-glow"); el2.classList.remove("swap-glow");
+  el1.classList.add("swap-moving", "swap-top");
+  el2.classList.add("swap-moving");
+
+  const a1 = el1.animate(buildArcFrames(dx1, dy1, 1, -1), { duration: dur, easing: "linear", fill: "none" });
+  const a2 = el2.animate(buildArcFrames(dx2, dy2, -1, 1), { duration: dur, easing: "linear", fill: "none" });
+
+  let finished = false;
+  const finishSwap = () => {
+    if (finished) return;
+    finished = true;
+    g.classList.remove("swapping-cards");
+    el1.classList.remove("swap-moving", "swap-top");
+    el2.classList.remove("swap-moving");
+    el1.classList.add("swap-glow");
+    el2.classList.add("swap-glow");
+    if (done) done();
+  };
+
+  a1.onfinish = finishSwap;
+  a1.oncancel = finishSwap;
+  setTimeout(finishSwap, dur + 60);
 }
 
 function triggerCardStrike(idx, isCrit) {
