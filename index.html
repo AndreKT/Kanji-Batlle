@@ -94,7 +94,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
   display:flex;flex-wrap:wrap;justify-content:center;align-content:center;
   flex:1 1 0%;min-height:0;min-width:0;overflow:hidden;
   gap:var(--grid-gap,8px);
-  margin:0 auto;padding:2px 0;
+  margin:0 auto;padding:var(--grid-gap,8px) 0;
   width:100%;max-width:calc(var(--cols,4) * var(--card-w,84px) + (var(--cols,4) - 1) * var(--grid-gap,8px) + 2px);
 }
 .c{
@@ -493,28 +493,24 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
   transition:border-color .15s,background .15s;
 }
 .cover-btn-sub:hover{border-color:#e6ad43;background:rgba(58,50,45,.95)}
-.audio-opt-list{display:grid;gap:8px;margin:12px 0;text-align:left}
-.audio-opt-btn{
-  background:var(--bg2);color:var(--fg);border:1.5px solid var(--line);border-radius:11px;
-  padding:10px 12px;cursor:pointer;text-align:left;width:100%;
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  transition:border-color .15s,background .15s,transform .12s;
-}
-.audio-opt-btn:hover{border-color:var(--gold)}
-.audio-opt-btn.playing{border-color:var(--gold);background:rgba(230,173,67,.14);box-shadow:0 0 0 2px rgba(230,173,67,.22)}
-.audio-opt-meta{display:flex;flex-direction:column;gap:2px}
-.audio-opt-meta strong{font-size:13.5px;color:var(--fg)}
-.audio-opt-meta span{font-size:11.5px;color:var(--mute);line-height:1.35}
-.audio-opt-badge{font-size:11.5px;font-weight:800;color:var(--gold);white-space:nowrap}
 
 /* ===== MODO 1 X 1 (DUELO & SELEÇÃO STREET FIGHTER) ===== */
 body.duel-mode .arena-dock{display:none}
 body:not(.duel-mode) .duel-p1-dock{display:none}
+@keyframes duelTurnPulse{
+  0%,100%{transform:scale(1);box-shadow:0 0 0 2.5px var(--gold),0 0 12px rgba(230,173,67,.5)}
+  50%{transform:scale(1.08);box-shadow:0 0 0 4px #ffd875,0 0 24px rgba(255,216,117,.9)}
+}
+@keyframes duelBadgePulse{
+  0%,100%{opacity:1}
+  50%{opacity:.52}
+}
 body.duel-mode #enemy.duel-turn #eart{
-  box-shadow:0 0 0 2.5px var(--gold),0 0 16px rgba(230,173,67,.55);border-radius:12px;
+  animation:duelTurnPulse 1.1s ease-in-out infinite;border-radius:12px;
 }
 body.duel-mode #enemy.duel-turn #ename::after{
-  content:" · SUA VEZ!";color:var(--gold);font-size:11.5px;font-weight:900;
+  content:" · SUA VEZ!";color:#ffd875;font-size:11.5px;font-weight:900;
+  animation:duelBadgePulse 1.1s ease-in-out infinite;
 }
 .duel-p1-dock{
   display:flex;flex-direction:column;align-items:center;gap:clamp(2px,0.5dvh,4px);
@@ -528,11 +524,12 @@ body.duel-mode #enemy.duel-turn #ename::after{
 .duel-p1-art img{height:100%;width:100%;object-fit:cover;object-position:50% 18%;border-radius:11px;border:1.5px solid rgba(255,255,255,.26);image-rendering:pixelated;display:block}
 .duel-p1-art img.yokai-cutout{object-fit:contain;object-position:center;border:none;border-radius:0;filter:drop-shadow(0 4px 8px rgba(0,0,0,.48))}
 .duel-p1-dock.duel-turn .duel-p1-art{
-  box-shadow:0 0 0 2.5px var(--gold),0 0 16px rgba(230,173,67,.55);
+  animation:duelTurnPulse 1.1s ease-in-out infinite;
 }
 .duel-p1-name{font-weight:800;font-size:clamp(13px,2.1dvh,15.5px);color:var(--fg)}
 .duel-p1-dock.duel-turn .duel-p1-name::after{
-  content:" · SUA VEZ!";color:var(--gold);font-size:11.5px;font-weight:900;
+  content:" · SUA VEZ!";color:#ffd875;font-size:11.5px;font-weight:900;
+  animation:duelBadgePulse 1.1s ease-in-out infinite;
 }
 body.arc-backdrop .duel-p1-name{color:#fff7ea;text-shadow:0 1px 4px rgba(0,0,0,.95)}
 .duel-p1-wrap{width:min(100%,270px)}
@@ -915,48 +912,6 @@ body.arc-backdrop .char-portrait{
   </div>
 </div>
 
-<!-- Modal Preview das Músicas de Fim de Jogo -->
-<div class="modal-bg" id="victory-audio-modal">
-  <div class="modal-card" style="max-width:420px">
-    <h2>🎵 Ouvir Trilhas de Fim de Jogo</h2>
-    <p>Toque em cada opção para ouvir. Akatombo (赤とんぼ) já está configurada como trilha tradicional de encerramento!</p>
-    <div class="audio-opt-list">
-      <button type="button" class="audio-opt-btn" id="vprev-0" data-vtheme="0" style="border-color:rgba(230,173,67,.55)">
-        <div class="audio-opt-meta">
-          <strong>🌸 Akatombo (赤とんぼ · Tradicional Japonesa)</strong>
-          <span>Valsa nostálgica japonesa (Kōsaku Yamada) em flauta suave e koto 3/4.</span>
-        </div>
-        <span class="audio-opt-badge" id="vprev-st-0">▶ Ouvir</span>
-      </button>
-      <button type="button" class="audio-opt-btn" id="vprev-1" data-vtheme="1">
-        <div class="audio-opt-meta">
-          <strong>1. Fanfarra Japonesa com Taiko</strong>
-          <span>Escala pentatônica festiva + batida de tambor taiko + koto.</span>
-        </div>
-        <span class="audio-opt-badge" id="vprev-st-1">▶ Ouvir</span>
-      </button>
-      <button type="button" class="audio-opt-btn" id="vprev-2" data-vtheme="2">
-        <div class="audio-opt-meta">
-          <strong>2. Tema Arcade 16-bit (estilo Street Fighter)</strong>
-          <span>Ritmo fliperama rápido, baixo pulsante e arpejo "YOU WIN!".</span>
-        </div>
-        <span class="audio-opt-badge" id="vprev-st-2">▶ Ouvir</span>
-      </button>
-      <button type="button" class="audio-opt-btn" id="vprev-3" data-vtheme="3">
-        <div class="audio-opt-meta">
-          <strong>3. Marcha Real de Campeão RPG</strong>
-          <span>Fanfarra solene em camadas com harmonia clássica de RPG.</span>
-        </div>
-        <span class="audio-opt-badge" id="vprev-st-3">▶ Ouvir</span>
-      </button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button type="button" class="secondary" id="vprev-stop" style="margin-top:0">⏹️ Parar som</button>
-      <button type="button" class="primary" id="vprev-close" style="margin-top:0">Fechar</button>
-    </div>
-  </div>
-</div>
-
 <!-- Aviso Dramático de Derrota (2.5s) -->
 <div id="defeat-banner" role="alertdialog" aria-label="Aviso de Derrota">
   <div class="defeat-card">
@@ -1004,7 +959,6 @@ body.arc-backdrop .char-portrait{
         <button type="button" class="cover-btn-sub" id="cover-duel">👥 Duelo 1x1</button>
         <button type="button" class="cover-btn-sub" id="cover-dex">📚 Grimório</button>
       </div>
-      <button type="button" class="cover-btn-sub" id="cover-victory-preview" style="width:100%;min-height:34px;border-color:rgba(230,173,67,.55);color:#ffd875">🎵 Ouvir Akatombo &amp; Músicas de Vitória</button>
     </div>
   </div>
 </div>
@@ -1851,7 +1805,7 @@ const TR = [
   { ms:210, step(i){ const b=[0,0,3,0,2,0,3,4][i%8]; tone(N(nt(36,b)),.16,"sawtooth",.09,0,null,bus); if(i%2===0)noise(.04,.12,0,5500,2800,bus); if(i%4===0)tone(115,.14,"sine",.3,0,40,bus); if(i%8>=4)tone(N(nt(72,[0,2,3,4][i%4])),.14,"square",.045,0,null,bus); } },
   { ms:250, step(i){ const b=[0,0,1,0,0,1,3,1][i%8]; tone(N(nt(33,b)),.22,"sawtooth",.11,0,null,bus); if(i%4===0){tone(100,.18,"sine",.36,0,35,bus);noise(.07,.18,0,2800,280,bus);} if(i%16===8)tone(N(nt(60,4)),.9,"triangle",.09,0,null,bus); } }
 ];
-function stopMusic() { clearInterval(mTimer); mTimer = null; if (typeof stopEndgameMusic === "function") stopEndgameMusic(); }
+function stopMusic() { clearInterval(mTimer); mTimer = null; }
 function startMusic() {
   stopMusic();
   if (!musOn || !ac || !S) return;
@@ -1899,207 +1853,6 @@ function playHappyVictoryMusic() {
     tone(N(n.m), n.d, "triangle", n.v, n.at);
     tone(N(n.m + 12), n.d * 0.7, "sine", n.v * 0.28, n.at + 0.01);
   });
-}
-
-let _vPrevBus = null;
-let _vPrevDoneTimer = null;
-let _endgameBus = null;
-
-function stopEndgameMusic() {
-  if (_endgameBus) {
-    try { _endgameBus.disconnect(); } catch (e) {}
-    _endgameBus = null;
-  }
-}
-
-function playAkatomboMusic(destOverride) {
-  initAudio();
-  if (!ac) return 0;
-  let out = destOverride;
-  if (!out) {
-    if (!musOn && !sfxOn) return 0;
-    stopEndgameMusic();
-    out = ac.createGain();
-    out.gain.value = 0.92;
-    out.connect(master);
-    _endgameBus = out;
-  }
-
-  // Melodia tradicional japonesa "Akatombo" (赤とんぼ — Kōsaku Yamada, 1927)
-  // Compasso 3/4 em Fá Maior (F, G, A, C, D)
-  const b = 0.54; // duração de 1 semínima (~111 BPM em valsa suave)
-  const melody = [
-    // Frase 1: Yu-ya-ke ko-ya-ke no a-ka-tom-bo
-    [60, 0.5, 0.0],
-    [65, 1.5, 0.5], [67, 0.5, 2.0], [69, 0.5, 2.5],
-    [72, 1.0, 3.0], [77, 1.0, 4.0], [74, 0.5, 5.0], [72, 0.5, 5.5],
-    [74, 2.5, 6.0],
-
-    // Frase 2: O-wa-re-te mi-ta no wa i-tsu no hi ka
-    [65, 0.5, 8.5],
-    [65, 1.0, 9.0], [67, 0.5, 10.0], [69, 1.0, 10.5], [69, 0.5, 11.5],
-    [74, 1.0, 12.0], [72, 0.5, 13.0], [74, 0.5, 13.5],
-    [77, 1.0, 14.0], [74, 2.0, 15.0],
-
-    // Frase 3: Ya-ma no ha-ta-ke no ku-wa no mi o
-    [72, 1.0, 17.5], [74, 0.5, 18.5], [72, 1.0, 19.0], [69, 0.5, 20.0],
-    [72, 1.0, 20.5], [69, 0.5, 21.5], [65, 1.5, 22.0],
-
-    // Frase 4: Ko-ka-go ni tsun-da wa ma-bo-ro-shi ka
-    [72, 0.5, 23.5], [69, 1.0, 24.0], [65, 1.0, 25.0],
-    [69, 1.0, 26.0], [67, 1.0, 27.0],
-    [65, 1.5, 28.0], [65, 2.6, 29.5]
-  ];
-
-  // Acompanhamento koto/harpa em valsa 3/4 (baixo no tempo 1, acorde nos tempos 2 e 3)
-  const waltzBars = [
-    [0.5,  53, 60, 65], // F
-    [3.0,  57, 64, 69], // Am
-    [6.0,  50, 57, 62], // Dm
-    [9.0,  53, 60, 65], // F
-    [12.0, 58, 62, 65], // Bb
-    [15.0, 50, 57, 62], // Dm
-    [17.5, 48, 55, 60], // C
-    [20.5, 53, 60, 65], // F
-    [23.5, 57, 60, 65], // F/A
-    [26.0, 48, 55, 60], // C7sus
-    [28.5, 53, 60, 65]  // F final
-  ];
-
-  waltzBars.forEach(([beat, bass, c1, c2]) => {
-    const t0 = beat * b;
-    tone(N(bass), b * 2.1, "sine", 0.085, t0, null, out);
-    tone(N(c1), b * 0.9, "triangle", 0.045, t0 + b * 0.9, null, out);
-    tone(N(c2), b * 0.9, "triangle", 0.045, t0 + b * 1.8, null, out);
-  });
-
-  // Acorde final delicado estilo koto
-  [53, 60, 65, 69, 77].forEach((m, idx) => {
-    tone(N(m), 2.4, "sine", 0.055, 29.5 * b + idx * 0.06, null, out);
-  });
-
-  melody.forEach(([m, durB, beat]) => {
-    const t = beat * b;
-    const d = Math.max(0.22, durB * b * 0.96);
-    tone(N(m), d, "triangle", 0.17, t, null, out);
-    tone(N(m + 12), d * 0.8, "sine", 0.042, t + 0.015, null, out);
-  });
-
-  return Math.round(33.5 * b * 1000);
-}
-
-function stopVictoryMusicPreview() {
-  clearTimeout(_vPrevDoneTimer);
-  _vPrevDoneTimer = null;
-  if (_vPrevBus) {
-    try { _vPrevBus.disconnect(); } catch (e) {}
-    _vPrevBus = null;
-  }
-  [0, 1, 2, 3].forEach(id => {
-    const btn = $("vprev-" + id);
-    const st = $("vprev-st-" + id);
-    if (btn) btn.classList.remove("playing");
-    if (st) st.textContent = "▶ Ouvir";
-  });
-}
-
-function playVictoryThemePreview(themeId) {
-  initAudio();
-  stopVictoryMusicPreview();
-  if (!ac) return;
-  const out = ac.createGain();
-  out.gain.value = 0.95;
-  out.connect(master);
-  _vPrevBus = out;
-
-  const btn = $("vprev-" + themeId);
-  const st = $("vprev-st-" + themeId);
-  if (btn) btn.classList.add("playing");
-  if (st) st.textContent = "🔊 Tocando...";
-
-  const taiko = (at, v = 0.42) => {
-    tone(128, 0.24, "sine", v, at, 42, out);
-    noise(0.09, v * 0.35, at, 900, 140, out);
-  };
-
-  let totalMs = 4600;
-  if (themeId === 0) {
-    totalMs = playAkatomboMusic(out) || 18000;
-  } else if (themeId === 1) {
-    // 1. Fanfarra Japonesa com Taiko (Pentatônica Yo festiva)
-    [0.00, 0.36, 0.72, 1.08, 1.44, 1.80, 2.16, 2.52, 2.88, 3.06, 3.24].forEach((t, idx) => {
-      taiko(t, idx >= 8 ? 0.48 : 0.36);
-    });
-    const mel1 = [
-      [72,0.16,0.00],[74,0.16,0.18],[76,0.18,0.36],[79,0.28,0.54],
-      [81,0.18,0.90],[79,0.18,1.08],[84,0.34,1.26],
-      [79,0.16,1.68],[81,0.16,1.86],[84,0.18,2.04],[86,0.28,2.22],
-      [88,0.20,2.56],[86,0.18,2.78],[84,0.20,2.98],[88,1.15,3.24]
-    ];
-    mel1.forEach(([m, d, at]) => {
-      tone(N(m), d, "triangle", 0.18, at, null, out);
-      tone(N(m + 12), d * 0.65, "sine", 0.06, at + 0.01, null, out);
-    });
-    [48,55,60].forEach(m => tone(N(m), 1.35, "sine", 0.08, 0.00, null, out));
-    [55,62,67].forEach(m => tone(N(m), 1.35, "sine", 0.08, 1.65, null, out));
-    [60,67,72,76,79].forEach(m => tone(N(m), 1.35, "triangle", 0.09, 3.24, null, out));
-    totalMs = 4700;
-  } else if (themeId === 2) {
-    // 2. Tema Arcade 16-bit (estilo Street Fighter)
-    const bass2 = [
-      [48,0.14,0.00],[48,0.14,0.18],[55,0.14,0.36],[55,0.14,0.54],
-      [45,0.14,0.72],[45,0.14,0.90],[53,0.14,1.08],[53,0.14,1.26],
-      [55,0.14,1.44],[55,0.14,1.62],[57,0.14,1.80],[59,0.14,1.98],
-      [60,0.85,2.22],[60,0.95,3.15]
-    ];
-    bass2.forEach(([m, d, at]) => tone(N(m), d, "sawtooth", 0.12, at, null, out));
-    [0.00,0.36,0.72,1.08,1.44,1.80,2.22,3.15].forEach(t => {
-      tone(110, 0.14, "sine", 0.34, t, 38, out);
-      noise(0.05, 0.12, t + 0.18, 5200, 2200, out);
-    });
-    const mel2 = [
-      [72,0.11,0.00],[76,0.11,0.12],[79,0.11,0.24],[84,0.26,0.36],
-      [83,0.12,0.72],[84,0.12,0.86],[86,0.16,1.00],[84,0.16,1.18],
-      [79,0.14,1.44],[81,0.14,1.62],[83,0.16,1.80],[86,0.18,1.98],
-      [84,0.12,2.22],[88,0.12,2.34],[91,0.14,2.46],[96,0.55,2.60],
-      [91,0.14,3.18],[96,1.05,3.36]
-    ];
-    mel2.forEach(([m, d, at]) => {
-      tone(N(m), d, "square", 0.085, at, null, out);
-      tone(N(m - 12), d, "triangle", 0.11, at, null, out);
-    });
-    [72,76,79,84].forEach(m => tone(N(m), 1.0, "triangle", 0.08, 3.36, null, out));
-    totalMs = 4550;
-  } else {
-    // 3. Marcha Real de Campeão RPG
-    const mel3 = [
-      [72,0.14,0.00],[72,0.14,0.18],[72,0.14,0.36],[72,0.52,0.54],
-      [68,0.44,1.14],[70,0.44,1.62],
-      [72,0.22,2.10],[70,0.16,2.38],[72,1.10,2.60],
-      [79,0.24,3.72],[84,1.15,4.00]
-    ];
-    mel3.forEach(([m, d, at]) => {
-      tone(N(m), d, "triangle", 0.18, at, null, out);
-      tone(N(m - 12), d * 0.95, "sawtooth", 0.065, at, null, out);
-      tone(N(m + 4), d * 0.8, "sine", 0.05, at + 0.01, null, out);
-    });
-    [48,55,60].forEach(m => tone(N(m), 1.05, "sine", 0.08, 0.00, null, out));
-    [44,51,56].forEach(m => tone(N(m), 0.50, "sine", 0.08, 1.14, null, out));
-    [46,53,58].forEach(m => tone(N(m), 0.50, "sine", 0.08, 1.62, null, out));
-    [48,55,60,64].forEach(m => tone(N(m), 1.15, "triangle", 0.08, 2.60, null, out));
-    [48,55,60,64,67].forEach(m => tone(N(m), 1.25, "triangle", 0.09, 4.00, null, out));
-    totalMs = 5350;
-  }
-
-  _vPrevDoneTimer = setTimeout(() => {
-    if (_vPrevBus === out) stopVictoryMusicPreview();
-  }, totalMs);
-}
-
-function openVictoryAudioPreview() {
-  initAudio();
-  stopVictoryMusicPreview();
-  $("victory-audio-modal").style.display = "flex";
 }
 
 // ===== BÊNÇÃOS DO MODO LIVRE =====
@@ -2193,31 +1946,32 @@ const sh = a => {
   }
   return a;
 };
-function computeBestGridLayout(n, availW, availH) {
+function computeBestGridLayout(n, availW, availH, limit5x5 = false) {
   let best = null;
-  const maxCols = Math.min(8, Math.max(2, n));
+  const maxCols = limit5x5 ? Math.min(5, Math.max(2, n)) : Math.min(8, Math.max(2, n));
+  const gap = Math.max(6, Math.min(14, Math.round(Math.min(availW, availH) * 0.024)));
   for (let c = 2; c <= maxCols; c++) {
     const rem = n % c;
     if (rem === 1 && n > 2) continue;
     const rows = Math.ceil(n / c);
-    const gap = (c >= 5 || rows >= 5 || availW < 320 || availH < 240) ? 6 : 8;
+    if (limit5x5 && rows > 5) continue;
     const maxWByWidth = (availW - (c - 1) * gap) / c;
-    const maxWByHeight = ((availH - (rows - 1) * gap) / rows) / 1.3;
+    const maxWByHeight = ((availH - (rows + 1) * gap) / rows) / 1.3;
     const cardW = Math.floor(Math.min(maxWByWidth, maxWByHeight));
     if (cardW < 18) continue;
-    const symBonus = rem === 0 ? 1.5 : 0;
-    const colBonus = c <= 6 ? 0.5 : 0;
+    const symBonus = rem === 0 ? 12 : (rem <= c - 3 ? -6 : 0);
+    const colBonus = c <= 5 ? 0.5 : 0;
     const score = cardW + symBonus + colBonus;
     if (!best || score > best.score) {
       best = { cols: c, rows, gap, cardW, score };
     }
   }
   if (!best) {
-    const c = Math.min(4, Math.max(2, n));
+    const c = Math.min(limit5x5 ? 5 : 4, Math.max(2, n));
     const rows = Math.ceil(n / c);
-    const gap = 4;
-    const cardW = Math.max(16, Math.floor(Math.min((availW - (c - 1) * gap) / c, ((availH - (rows - 1) * gap) / rows) / 1.3)));
-    best = { cols: c, rows, gap, cardW };
+    const fallbackGap = 4;
+    const cardW = Math.max(16, Math.floor(Math.min((availW - (c - 1) * fallbackGap) / c, ((availH - (rows + 1) * fallbackGap) / rows) / 1.3)));
+    best = { cols: c, rows, gap: fallbackGap, cardW };
   }
   return best;
 }
@@ -2244,7 +1998,7 @@ function layoutBoardGrid() {
   const gCs = getComputedStyle(g);
   const gPadY = parseFloat(gCs.paddingTop) + parseFloat(gCs.paddingBottom);
 
-  let availH = g.clientHeight > 40 ? (g.clientHeight - gPadY - 4) : 0;
+  let availH = g.clientHeight > 40 ? (g.clientHeight - 4) : 0;
   if (!availH) {
     const topEl = document.querySelector("#app > .top");
     const enemyEl = $("enemy");
@@ -2258,12 +2012,13 @@ function layoutBoardGrid() {
       (hintEl && hintEl.style.display !== "none" ? hintEl.offsetHeight + 3 : 0) +
       (playerEl ? playerEl.offsetHeight : 150);
     const appH = app.clientHeight || window.innerHeight || 720;
-    availH = Math.max(80, appH - appPadY - usedH - gPadY - 8);
+    availH = Math.max(80, appH - appPadY - usedH - 8);
   } else {
     availH = Math.max(80, availH);
   }
 
-  const layout = computeBestGridLayout(S.cards.length, availW, availH);
+  const limit5x5 = S.gameKind === "duel";
+  const layout = computeBestGridLayout(S.cards.length, availW, availH, limit5x5);
   if (
     g.dataset.cols !== String(layout.cols) ||
     g.dataset.cardW !== String(layout.cardW) ||
@@ -3117,6 +2872,8 @@ function getGuestDescription(guestId) {
   return "";
 }
 
+const DUEL_STAGE_PAIRS = [4, 5, 6, 7, 8, 9, 10, 12];
+
 function startDuelRound(roundNum) {
   clearDuelTimers();
   document.body.classList.add("duel-mode");
@@ -3137,7 +2894,8 @@ function startDuelRound(roundNum) {
   applyStageBackdrop(roundNum);
 
   const arcKanjis = S.arcObj.kanjis.slice();
-  const basePairs = Math.min(8, Math.max(4, arcKanjis.length + (d.currentGuest === "tengu" ? 1 : 0)));
+  const stagePairs = DUEL_STAGE_PAIRS[Math.max(0, Math.min(7, roundNum - 1))];
+  const basePairs = Math.min(12, stagePairs + (d.currentGuest === "tengu" ? 1 : 0));
   let chosen = arcKanjis.map(ch => KANJI_MAP[ch]).filter(Boolean);
   if (chosen.length < basePairs) {
     const extra = sh(KANJI.filter(k => !arcKanjis.includes(k.k)));
@@ -3156,13 +2914,8 @@ function startDuelRound(roundNum) {
   buildGridDOM();
 
   const h = $("hint");
-  if (d.currentGuest && YOKAI_DB[d.currentGuest]) {
-    h.style.display = "block";
-    h.textContent = `✨ Surpresa (${roundNum}/8) · ${getGuestDescription(d.currentGuest)}`;
-  } else {
-    h.style.display = "block";
-    h.textContent = `${S.arcObj.title} · Cartas fechadas — acerte para atacar e jogar de novo!`;
-  }
+  h.style.display = "none";
+  h.textContent = "";
 
   // Sorteio aleatório de quem começa
   const starter = Math.random() < 0.5 ? 1 : 2;
@@ -3178,7 +2931,8 @@ function startDuelRound(roundNum) {
     S.lock = false;
     renderAll();
     play("go");
-    toast(`🎯 Vez de ${starterLabel}!`);
+    const guestInfo = d.currentGuest && YOKAI_DB[d.currentGuest] ? ` · ✨ ${getGuestDescription(d.currentGuest)}` : "";
+    toast(`🎯 Vez de ${starterLabel}!${guestInfo}`);
     if (d.vsCpu && d.turn === 2) scheduleDuelCpuMove();
   }, fastMode ? 550 : 1050);
 }
@@ -3320,7 +3074,7 @@ function finishDuelChampionship() {
   d.p1Mood = champ === 1 ? "victory" : champ === 2 ? "defeat" : "victory";
   d.p2Mood = champ === 2 ? "victory" : champ === 1 ? "defeat" : "victory";
   renderAll();
-  playAkatomboMusic();
+  playHappyVictoryMusic();
 
   $("mt").textContent = champ === 1
     ? `🏆 Jogador 1 (${p1.name}) é o Campeão!`
@@ -3333,7 +3087,7 @@ function finishDuelChampionship() {
       <div class="hero-avatars">${p1.render(d.p1Mood)}${p2.render(d.p2Mood)}</div>
       <div class="hero-copy">
         <strong>${champ === 0 ? "Rivais à altura!" : (champ === 1 ? `Campeão: ${p1.name}` : `Campeão: ${p2.name}`)}</strong>
-        <span>Total nas 8 telas: J1 ${d.p1TotalCards} cartas × J2 ${d.p2TotalCards} cartas · Trilha final: 🌸 Akatombo</span>
+        <span>Total acumulado nas 8 telas: J1 ${d.p1TotalCards} cartas × J2 ${d.p2TotalCards} cartas</span>
       </div>
     </div>
     <div class="duel-champ-grid">${d.roundHistory.map(rh => `
@@ -3963,7 +3717,7 @@ function completeStoryArc() {
   const after = getPlayerProgress(SAVE.xp);
   persist();
   if (after.level > before.level) play("levelup");
-  if (arc === 8) playAkatomboMusic();
+  if (arc === 8) playHappyVictoryMusic();
 
   const nextRune = RUNES.find(r => r.unlockArc === arc + 1);
   $("mt").textContent = arc === 8 ? "Saga Concluída! Selo 恵美 Desperto!" : `Arco ${arc} Concluído!`;
@@ -4236,7 +3990,6 @@ function showStartModal() {
       <button type="button" class="secondary" id="open-lib-start">📚 Grimório de Kanjis & Yokais</button>
       <button type="button" class="secondary" id="open-cover-start" style="width:auto;padding:8px 12px">🖼️ Capa</button>
     </div>
-    <button type="button" class="secondary" id="open-victory-preview" style="border-color:rgba(230,173,67,.5);color:var(--gold)">🎵 Ouvir Akatombo & Músicas de Vitória</button>
   `;
 
   $("tab-story").onclick = () => { startTab = "story"; showStartModal(); };
@@ -4244,7 +3997,6 @@ function showStartModal() {
   $("tab-duel").onclick = () => { startTab = "duel"; showStartModal(); };
   $("open-lib-start").onclick = () => openLibrary();
   $("open-cover-start").onclick = () => showCoverScreen();
-  $("open-victory-preview").onclick = () => openVictoryAudioPreview();
 
   if (startTab === "story") {
     $("mbody").querySelectorAll("[data-arc]").forEach(btn => {
@@ -4519,22 +4271,6 @@ $("cover-duel").onclick = () => {
   showStartModal();
 };
 $("cover-dex").onclick = () => openLibrary();
-$("cover-victory-preview").onclick = () => openVictoryAudioPreview();
-
-[0, 1, 2, 3].forEach(id => {
-  $("vprev-" + id).onclick = () => playVictoryThemePreview(id);
-});
-$("vprev-stop").onclick = () => stopVictoryMusicPreview();
-$("vprev-close").onclick = () => {
-  stopVictoryMusicPreview();
-  $("victory-audio-modal").style.display = "none";
-};
-$("victory-audio-modal").onclick = (ev) => {
-  if (ev.target === $("victory-audio-modal")) {
-    stopVictoryMusicPreview();
-    $("victory-audio-modal").style.display = "none";
-  }
-};
 
 let _gridResizeRaf = 0;
 function handleViewportResize() {
